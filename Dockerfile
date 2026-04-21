@@ -44,8 +44,7 @@ ENV CARGO_BUILD_JOBS=2
 # ------------------------
 WORKDIR /workspace
 
-# ✅ BEST PRACTICE: COPY LOCAL NODE (NO GIT CLONE)
-COPY node /workspace/node
+RUN git clone --depth 1 https://github.com/paritytech/substrate-node-template.git /workspace/node
 
 WORKDIR /workspace/node
 

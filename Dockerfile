@@ -28,8 +28,7 @@ RUN rustup target add wasm32-unknown-unknown
 # ------------------------
 WORKDIR /workspace
 
-# Copy YOUR chain
-COPY node /workspace/node
+RUN git clone https://github.com/substrate-developer-hub/substrate-node-template.git /workspace/node
 
 WORKDIR /workspace/node
 

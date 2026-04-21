@@ -3,20 +3,31 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # ------------------------
-# SYSTEM DEPENDENCIES
+# SYSTEM DEPENDENCIES (FIXED FOR SUBSTRATE)
 # ------------------------
 RUN apt update && apt install -y \
-    curl git build-essential clang pkg-config libssl-dev \
-    ca-certificates libclang-dev llvm make cmake
+    curl \
+    git \
+    build-essential \
+    clang \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    libclang-dev \
+    llvm \
+    make \
+    cmake \
+    protobuf-compiler \
+    libudev-dev
 
 # ------------------------
-# NODE.JS (optional but useful)
+# NODE.JS (for frontend/contracts)
 # ------------------------
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt install -y nodejs
 
 # ------------------------
-# RUST SETUP (FIXED)
+# RUST SETUP
 # ------------------------
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -25,7 +36,7 @@ RUN rustup default stable
 RUN rustup update
 RUN rustup target add wasm32-unknown-unknown
 
-# Reduce memory usage (VERY IMPORTANT)
+# Reduce memory usage (IMPORTANT for CI)
 ENV CARGO_BUILD_JOBS=2
 
 # ------------------------
@@ -33,19 +44,19 @@ ENV CARGO_BUILD_JOBS=2
 # ------------------------
 WORKDIR /workspace
 
-# ⚠️ Use template instead of full substrate (MUCH smaller)
-RUN git clone --depth 1 https://github.com/paritytech/substrate-node-template.git node
+# ✅ BEST PRACTICE: COPY LOCAL NODE (NO GIT CLONE)
+COPY node /workspace/node
 
 WORKDIR /workspace/node
 
 # ------------------------
-# CACHE + BUILD
+# BUILD
 # ------------------------
 RUN cargo fetch
 RUN cargo build --release
 
 # ------------------------
-# COPY START SCRIPT (YOU WERE MISSING THIS)
+# START SCRIPT
 # ------------------------
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
